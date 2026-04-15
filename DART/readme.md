@@ -143,7 +143,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -180,7 +180,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -217,7 +217,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -254,7 +254,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -295,7 +295,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=2 \
+  --mem_mb=2048 --th_mb=2 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -330,7 +330,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=2 \
+  --mem_mb=2048 --th_mb=2 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -365,7 +365,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=2 \
+  --mem_mb=2048 --th_mb=2 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -400,7 +400,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -435,7 +435,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -470,7 +470,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=10 \
+  --mem_mb=2048 --th_mb=10 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -505,7 +505,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=50 \
+  --mem_mb=2048 --th_mb=50 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -540,7 +540,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=50 \
+  --mem_mb=2048 --th_mb=50 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -575,7 +575,7 @@ bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1
 cd ~/comp-arch/DART
 bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
-  --mem_mb=1024 --th_mb=50 \
+  --mem_mb=2048 --th_mb=50 \
   --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
   --bucket=256 --run_max_request=1000000
 ```
@@ -643,7 +643,7 @@ num shortcuts: 4118           ← skip-table entries built
 |-----------|----------|---------|-------------|
 | `POLICY_*` | `src/main/compute.cc:~53` | CRITICALITY | Active caching policy |
 | `POLICY_MAX_ENTRIES` | `src/main/compute.cc:~58` | 5000 | Max skip-table entries |
-| `--mem_mb` | monitor flag | 1024 | Remote memory pool in MiB |
+| `--mem_mb` | monitor flag | 2048 | Remote memory pool in MiB (1M records @ fieldlen=100 needs ~1.22 GB; use 2048 for safe margin) |
 | `--th_mb` | monitor flag | 10 | Per-thread local RDMA cache in MiB |
 | `--run_max_request` | monitor flag | 1000000 | Operations in run phase |
 | `--load_thread_num` | monitor flag | 56 | Threads for loading data |
