@@ -1,0 +1,101 @@
+{
+    "machine": {
+        "72": {
+            "ip": "192.168.98.72",
+            "user": "shiroko",
+            "password": "suna123",
+            "project_parent_path": "~"
+        },
+        "74": {
+            "ip": "192.168.98.74",
+            "user": "shiroko",
+            "password": "suna123",
+            "project_parent_path": "~"
+        }
+    },
+
+    "command": {
+        "monitor": {
+            "run_command": "bin/monitor",
+            "run_args": {
+                "test_func": 3,
+                "memory_num": "\\overwrite",
+                "compute_num": "\\overwrite",
+                "coro_num": 1,
+                "mem_mb": 8192,
+                "th_mb": 10,
+                "workload_load": "\\overwrite",
+                "workload_run": "\\overwrite",
+                "bucket": "\\overwrite",
+                "load_thread_num": "\\overwrite",
+                "run_thread_num": "\\overwrite",
+                "run_max_request": "\\overwrite"
+            }
+        },
+        "compute": {
+            "run_command": "bin/compute",
+            "run_args": {
+                "monitor_addr": "\\overwrite",
+                "nic_index": 1
+            }
+        },
+        "memory": {
+            "run_command": "bin/memory",
+            "run_args": {
+                "monitor_addr": "\\overwrite",
+                "nic_index": 0
+            }
+        }
+    },
+
+    "benchmark": [
+        [
+            {
+                "command_name": "monitor",
+                "machine_name": "72",
+                "\\depend": {
+                    "memory_num": 2,
+                    "compute_num": 2,
+                    "bucket": 256,
+                    "load_thread_num": 56,
+                    "run_max_request": 1000000
+                },
+                "\\range": {
+                    "\\same\\asdf(any_tag_is_ok)": {
+                        "workload_load": ["a_load", "a_load", "a_load", "a_load", "e_load"],
+                        "workload_run": ["a_run", "b_run", "c_run", "d_run", "e_run"]
+                    },
+                    "run_thread_num": [56, 42, 28, 21, 14, 7, 1]
+                }
+            },
+            {
+                "command_name": "memory",
+                "machine_name": "72",
+                "\\depend": {
+                    "monitor_addr": "\\data\\monitor\\\\ip\\:9898"
+                }
+            },
+            {
+                "command_name": "memory",
+                "machine_name": "74",
+                "\\depend": {
+                    "monitor_addr": "\\data\\monitor\\\\ip\\:9898"
+                }
+            },
+            {
+                "command_name": "compute",
+                "machine_name": "72",
+                "\\depend": {
+                    "monitor_addr": "\\data\\monitor\\\\ip\\:9898"
+                }
+            },
+            {
+                "command_name": "compute",
+                "machine_name": "74",
+                "\\depend": {
+                    "monitor_addr": "\\data\\monitor\\\\ip\\:9898"
+                }
+            }
+        ]
+    ]
+}

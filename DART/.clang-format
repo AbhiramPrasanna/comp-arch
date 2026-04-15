@@ -1,0 +1,17 @@
+# general
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 96
+
+# function
+AlignAfterOpenBracket: BlockIndent
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 99999999
+AlwaysBreakTemplateDeclarations: Yes
+
+# pointer
+PointerAlignment: Left
+
+# define
+AlignEscapedNewlines: DontAlign

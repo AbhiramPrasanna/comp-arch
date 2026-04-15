@@ -1,0 +1,11 @@
+[submodule "gflags"]
+	path = gflags
+	url = git@github.com:gflags/gflags.git
+
+[submodule "argimpl"]
+	path = pylib/argimpl
+	url = git@github.com:Tastror/argimpl.git
+	
+[submodule "magic_enum"]
+	path = magic_enum
+	url = git@github.com:Neargye/magic_enum.git
