@@ -25,7 +25,7 @@ set -uo pipefail
 MONITOR_IP="10.30.1.9"           # IP where bin/monitor runs (this machine)
 
 # Memory nodes: space-separated IPs
-MEMORY_IPS=("10.30.1.6")
+MEMORY_IPS=("10.30.1.9")
 
 # Compute nodes: space-separated IPs  (can include MONITOR_IP for co-located)
 COMPUTE_IPS=("10.30.1.9")
