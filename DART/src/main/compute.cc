@@ -27,6 +27,13 @@
 #include "race/common.h"
 #endif
 
+// Enable per-node RDMA access tracking (must match art-node.cc).
+// Required for POLICY_HOTNESS / POLICY_CRITICALITY / POLICY_HYBRID.
+#define ENABLE_ACCESS_TRACKING
+#ifdef ENABLE_ACCESS_TRACKING
+#include "prheart/access-tracker.hpp"
+#endif
+
 // ---- Phase 3: skip table construction policy ----------------------------
 // Exactly ONE of the following should be defined.
 //
