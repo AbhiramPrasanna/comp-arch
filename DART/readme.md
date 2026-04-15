@@ -226,34 +226,498 @@ bin/compute \
 
 ---
 
-## 6. Automated Full Experiment Sweep
+## 6. All 13 Experiments — Full Manual Commands
 
-Runs all 13 experiments (4 policies + 9 cache pressure) automatically.
-Start in this order, each in its own terminal:
+For every experiment the steps are the same:
+1. Set policy + budget in `compute.cc` via `sed` (on 10.30.1.6)
+2. Rebuild (on 10.30.1.6)
+3. Kill leftover processes (both servers)
+4. Start memory (10.30.1.9)
+5. Start monitor (10.30.1.6) — **before** compute
+6. Start compute (10.30.1.6)
 
-**Terminal 1 — on 10.30.1.9 (memory node):**
+---
+
+### Helper — kill everything before each experiment
+
 ```bash
-cd ~/comp-arch/DART
-./run_memory.sh
+# On 10.30.1.9
+killall -9 memory 2>/dev/null || true
+
+# On 10.30.1.6
+killall -9 monitor compute 2>/dev/null || true
+sudo fuser -k 9898/tcp 2>/dev/null || true
+sleep 2
 ```
 
-**Terminal 2 — on 10.30.1.6 (compute, start after memory):**
+---
+
+### Experiment 1 — POLICY_STATIC, budget=5000, th_mb=10
+
+**On 10.30.1.6 — set policy and build:**
 ```bash
 cd ~/comp-arch/DART
-./run_compute.sh
+sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|^// #define POLICY_STATIC$|#define POLICY_STATIC|' src/main/compute.cc
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
 ```
 
-**Terminal 3 — on 10.30.1.6 (monitor + orchestrator, start last):**
+**On 10.30.1.9 — start memory:**
 ```bash
 cd ~/comp-arch/DART
-./run_monitor.sh
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
 ```
 
-Results are saved to `results/<timestamp>/summary.txt`.
-
-Preview without running:
+**On 10.30.1.6 — start monitor:**
 ```bash
-./run_monitor.sh --dry-run
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 2 — POLICY_HOTNESS, budget=5000, th_mb=10
+
+**On 10.30.1.6 — set policy and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|^// #define POLICY_HOTNESS$|#define POLICY_HOTNESS|' src/main/compute.cc
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 3 — POLICY_CRITICALITY, budget=5000, th_mb=10
+
+**On 10.30.1.6 — set policy and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|^// #define POLICY_CRITICALITY$|#define POLICY_CRITICALITY|' src/main/compute.cc
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 4 — POLICY_HYBRID, budget=5000, th_mb=10
+
+**On 10.30.1.6 — set policy and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|^// #define POLICY_HYBRID$|#define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+> Experiments 5–13 all use **POLICY_CRITICALITY**. Only `budget` and `--th_mb` change.
+> The build only needs to be redone when the budget changes.
+
+---
+
+### Experiment 5 — POLICY_CRITICALITY, budget=500, th_mb=2
+
+**On 10.30.1.6 — set policy and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+sed -i 's|^// #define POLICY_CRITICALITY$|#define POLICY_CRITICALITY|' src/main/compute.cc
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 500|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=2 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 6 — POLICY_CRITICALITY, budget=1000, th_mb=2
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 1000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=2 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 7 — POLICY_CRITICALITY, budget=5000, th_mb=2
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=2 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 8 — POLICY_CRITICALITY, budget=500, th_mb=10
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 500|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 9 — POLICY_CRITICALITY, budget=1000, th_mb=10
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 1000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 10 — POLICY_CRITICALITY, budget=5000, th_mb=10
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=10 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 11 — POLICY_CRITICALITY, budget=500, th_mb=50
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 500|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=50 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 12 — POLICY_CRITICALITY, budget=1000, th_mb=50
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 1000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=50 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
+```
+
+---
+
+### Experiment 13 — POLICY_CRITICALITY, budget=5000, th_mb=50
+
+**On 10.30.1.6 — set budget and build:**
+```bash
+cd ~/comp-arch/DART
+sed -i 's|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = 5000|' src/main/compute.cc
+./build.sh
+```
+
+**On 10.30.1.9 — start memory:**
+```bash
+cd ~/comp-arch/DART
+sudo sysctl -w vm.nr_hugepages=1024
+bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
+```
+
+**On 10.30.1.6 — start monitor:**
+```bash
+cd ~/comp-arch/DART
+bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+  --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+  --mem_mb=1024 --th_mb=50 \
+  --workload_prefix=./workload/data/ --workload_load=f_load --workload_run=f_run \
+  --bucket=256 --run_max_request=100000
+```
+
+**On 10.30.1.6 — start compute:**
+```bash
+cd ~/comp-arch/DART
+bin/compute --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
+  --numa_node_total_num=2 --numa_node_group=0
 ```
 
 ---
