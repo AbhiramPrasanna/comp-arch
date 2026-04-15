@@ -14111,3 +14111,133 @@ DART/workload_spec
 hint: Use -f if you really want to add them.
 hint: Turn this message off by running
 hint: "git config advice.addIgnoredFile false"
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   .gitignore
+	modified:   build.sh
+	new file:   compute_results.txt
+	new file:   gflags
+	new file:   magic_enum
+	new file:   pylib/argimpl
+	modified:   src/main/compute.cc
+	new file:   ~/comp-arch/DART/logs/compute_POLICY_STATIC_wlc_ent5000_thmb10.txt
+
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ [7mgit commit -m "Add experiment results and workload specs for 23-experiment suite"[27m
+[7mgit push[27m
+[A[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit commit -m "Add experiment results and workload specs for 23-experiment suite"
+git push
+[A
+[?2004l[main 51566ab] Add experiment results and workload specs for 23-experiment suite
+ 8 files changed, 14223 insertions(+), 1 deletion(-)
+ mode change 100644 => 100755 DART/build.sh
+ create mode 100644 DART/compute_results.txt
+ create mode 160000 DART/gflags
+ create mode 160000 DART/magic_enum
+ create mode 160000 DART/pylib/argimpl
+ create mode 100644 DART/~/comp-arch/DART/logs/compute_POLICY_STATIC_wlc_ent5000_thmb10.txt
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/AbhiramPrasanna/comp-arch.git/'
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ git push
+[?2004lremote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/AbhiramPrasanna/comp-arch.git/'
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ git push
+[?2004lremote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/AbhiramPrasanna/comp-arch.git/'
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ git push
+[?2004lremote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/AbhiramPrasanna/comp-arch.git/'
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ git push
+[?2004lTo https://github.com/AbhiramPrasanna/comp-arch.git
+ ! [rejected]        main -> main (fetch first)
+error: failed to push some refs to 'https://github.com/AbhiramPrasanna/comp-arch.git'
+hint: Updates were rejected because the remote contains work that you do
+hint: not have locally. This is usually caused by another repository pushing
+hint: to the same ref. You may want to first integrate the remote changes
+hint: (e.g., 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ [7m# 1. Save results.txt somewhere safe first (just in case)[27m
+[7mcp results.txt ~/results_backup.txt[27m
+[7mcp compute_results.txt ~/compute_results_backup.txt 2>/dev/null; true[27m
+
+[7m# 2. Pull remote changes (won't touch results.txt since it's not tracked remotely)[27m
+[7mgit pull[27m
+
+[7m# 3. Now push your changes[27m
+[7mgit push[27m
+[A[A[A[A[A[A[A[A[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C# 1. Save results.txt somewhere safe first (just in case)
+cp results.txt ~/results_backup.txt
+cp compute_results.txt ~/compute_results_backup.txt 2>/dev/null; true
+
+# 2. Pull remote changes (won't touch results.txt since it's not tracked remotely)
+git pull
+
+# 3. Now push your changes
+git push
+[A
+[?2004lFrom https://github.com/AbhiramPrasanna/comp-arch
+   f54c08a..b32d733  main       -> origin/main
+hint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+hint: 
+hint:   git config pull.rebase false  # merge
+hint:   git config pull.rebase true   # rebase
+hint:   git config pull.ff only       # fast-forward only
+hint: 
+hint: You can replace "git config" with "git config --global" to set a default
+hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+hint: or --ff-only on the command line to override the configured default per
+hint: invocation.
+fatal: Need to specify how to reconcile divergent branches.
+To https://github.com/AbhiramPrasanna/comp-arch.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/AbhiramPrasanna/comp-arch.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ git pull
+[?2004lhint: You have divergent branches and need to specify how to reconcile them.
+hint: You can do so by running one of the following commands sometime before
+hint: your next pull:
+hint: 
+hint:   git config pull.rebase false  # merge
+hint:   git config pull.rebase true   # rebase
+hint:   git config pull.ff only       # fast-forward only
+hint: 
+hint: You can replace "git config" with "git config --global" to set a default
+hint: preference for all repositories. You can also pass --rebase, --no-rebase,
+hint: or --ff-only on the command line to override the configured default per
+hint: invocation.
+fatal: Need to specify how to reconcile divergent branches.
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ [7mgit pull --rebase[27m
+[7mgit push[27m
+[A[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit pull --rebase
+git push
+[A
+[?2004lerror: cannot pull with rebase: You have unstaged changes.
+error: please commit or stash them.
+To https://github.com/AbhiramPrasanna/comp-arch.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/AbhiramPrasanna/comp-arch.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+]0;apa222@cs-dis-srv09s:~/comp-arch/DART[?2004h[apa222@cs-dis-srv09s DART]$ [7mgit stash[27m
+[7mgit pull --rebase[27m
+[7mgit stash pop[27m
+[7mgit add results.txt compute_results.txt[27m
+[7mgit commit -m "Add experiment results from 23-run benchmark suite"[27m
+[7mgit push[27m
+[A[A[A[A[A[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit stash
+git pull --rebase
+git stash pop
+git add results.txt compute_results.txt
+git commit -m "Add experiment results from 23-run benchmark suite"
+git push
+[A
+[?2004l
