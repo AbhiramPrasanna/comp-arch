@@ -2,63 +2,118 @@
 
 ## Cluster Setup
 
-| Node | IP | Role |
-|------|----|------|
-| cs-dis-srv09s | 10.30.1.9 | Memory node |
-| cs-dis-srv06s | 10.30.1.6 | Compute + Monitor node |
+| Server | IP | Role |
+|--------|----|------|
+| cs-dis-srv09s | **10.30.1.9** | Memory node — runs `bin/memory` |
+| cs-dis-srv06s | **10.30.1.6** | Compute + Monitor node — runs `bin/compute` and `bin/monitor` |
+
+All commands below must be run from `~/comp-arch/DART` on the respective server.
 
 ---
 
-## Build
+## 1. First-Time Setup (both servers)
 
 ```bash
-cd ~/comp-arch/DART
+# On BOTH 10.30.1.9 and 10.30.1.6
+cd ~
+git clone https://github.com/AbhiramPrasanna/comp-arch.git
+cd comp-arch/DART
 
-# Clone submodules if missing
+# Clone missing submodules
 ls gflags/CMakeLists.txt     2>/dev/null || git clone https://github.com/gflags/gflags.git gflags
 ls magic_enum/CMakeLists.txt 2>/dev/null || git clone https://github.com/Neargye/magic_enum.git magic_enum
 
-chmod +x build.sh
+chmod +x build.sh run_memory.sh run_compute.sh run_monitor.sh
 ./build.sh
 
-# Verify binaries exist
+# Verify binaries
 ls -lh bin/memory bin/compute bin/monitor
 ```
 
 ---
 
-## Changing the Caching Policy
+## 2. Workload Generation (on 10.30.1.6 — compute node only)
 
-Edit `src/main/compute.cc` around **line 51**. Exactly **one** policy must be uncommented:
-
-```cpp
-// #define POLICY_STATIC        // original DART: structural DFS skip entries
-// #define POLICY_HOTNESS       // top-K nodes by raw RDMA read frequency
-#define POLICY_CRITICALITY      // top-K nodes by depth_sum (RTT savings) ← recommended
-// #define POLICY_HYBRID        // weighted blend: 0.5*hotness + 0.5*criticality
-```
-
-Set the skip-table budget at **line 58**:
-
-```cpp
-static constexpr uint64_t POLICY_MAX_ENTRIES = 5000;  // try 500, 1000, 5000
-```
-
-After any edit, rebuild:
+Workload files live in `workload/data/` on the compute node. Only needs to be done once.
 
 ```bash
+# On 10.30.1.6
+cd ~/comp-arch/DART
+
+# Download YCSB 0.17.0 (streaming — avoids disk waste)
+mkdir -p workload/ycsb
+wget -qO- https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz \
+    | tar -xz -C workload/ycsb --strip-components=1
+
+# Build classpath
+CP=$(find workload/ycsb -name "*.jar" | tr '\n' ':')
+mkdir -p workload/data
+
+# Generate workload f (50% read + 50% scan, zipfian, 100K ops)
+java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB \
+    -P workload_spec/f -s -load > workload/data/f_load
+java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB \
+    -P workload_spec/f -s -t   > workload/data/f_run
+
+# Verify (should each show ~100000 lines)
+echo "f_load: $(wc -l < workload/data/f_load) lines"
+echo "f_run:  $(wc -l < workload/data/f_run) lines"
+```
+
+To generate other workloads replace `f` with `a b c d e g` in the commands above.
+
+---
+
+## 3. Changing the Caching Policy
+
+Edit `src/main/compute.cc` on **10.30.1.6**. Find lines 51–54 and uncomment **exactly one** policy:
+
+```cpp
+// #define POLICY_STATIC        // original DART: structural DFS (no tracking needed)
+// #define POLICY_HOTNESS       // top-K nodes by raw RDMA read count
+#define POLICY_CRITICALITY      // top-K nodes by depth_sum — RTT savings (recommended)
+// #define POLICY_HYBRID        // 0.5 * hotness + 0.5 * criticality
+```
+
+Change the skip-table budget on **line 58**:
+
+```cpp
+static constexpr uint64_t POLICY_MAX_ENTRIES = 5000;  // options: 500, 1000, 5000
+```
+
+After every edit, rebuild on **10.30.1.6**:
+
+```bash
+# On 10.30.1.6
+cd ~/comp-arch/DART
 ./build.sh
 ```
 
 ---
 
-## Manual Execution
+## 4. Manual Single Experiment
 
-Start binaries in this exact order: **memory first → monitor second → compute last**
+Run binaries in this exact order: **memory → monitor → compute**
 
-### Terminal 1 — Memory node (10.30.1.9)
+### Kill leftover processes first
 
 ```bash
+# On 10.30.1.9
+killall -9 memory 2>/dev/null || true
+
+# On 10.30.1.6
+killall -9 monitor compute 2>/dev/null || true
+sudo fuser -k 9898/tcp 2>/dev/null || true
+```
+
+---
+
+### Step 1 — Start memory on 10.30.1.9
+
+Open a terminal on **10.30.1.9**:
+
+```bash
+cd ~/comp-arch/DART
 sudo sysctl -w vm.nr_hugepages=1024
 
 bin/memory \
@@ -67,13 +122,17 @@ bin/memory \
   --ib_port=1
 ```
 
-Leave this running. It registers its RDMA pool with the monitor and waits.
+Leave this running. Memory connects to monitor at `10.30.1.6:9898` and waits.
 
 ---
 
-### Terminal 2 — Monitor (10.30.1.6) — start before compute
+### Step 2 — Start monitor on 10.30.1.6
+
+Open a terminal on **10.30.1.6** and start monitor **before** compute:
 
 ```bash
+cd ~/comp-arch/DART
+
 bin/monitor \
   --test_func=0 \
   --memory_num=1 \
@@ -90,13 +149,17 @@ bin/monitor \
   --run_max_request=100000
 ```
 
-Monitor blocks and waits for both memory and compute to connect before starting.
+Monitor blocks and listens on port 9898. It waits for both memory and compute to connect.
 
 ---
 
-### Terminal 3 — Compute (10.30.1.6) — start after monitor is listening
+### Step 3 — Start compute on 10.30.1.6
+
+Open another terminal on **10.30.1.6**:
 
 ```bash
+cd ~/comp-arch/DART
+
 bin/compute \
   --monitor_addr=10.30.1.6:9898 \
   --nic_index=0 \
@@ -105,58 +168,46 @@ bin/compute \
   --numa_node_group=0
 ```
 
-Once all three are connected the experiment runs. Results print in the compute terminal.
+Once compute connects, the experiment starts automatically. Results appear in the compute terminal when it finishes.
 
 ---
 
-## Running a Different Workload
+### Step 4 — Read the results
 
-Change `--workload_load` and `--workload_run` in the monitor command:
+In the compute terminal you will see per-thread and aggregate output:
 
-| Workload | Description |
-|----------|-------------|
-| `f` | 50% read + 50% scan, zipfian distribution |
-| `c` | 100% read, zipfian |
-| `g` | 100% read, uniform |
-| `d` | 100% read, latest |
-| `e` | 100% scan, zipfian |
-| `a` | 100% read, zipfian |
-| `b` | 100% read, zipfian |
-
-Example — run workload c:
-```bash
-bin/monitor ... --workload_load=c_load --workload_run=c_run ...
+```
+throughput: 0.396568 MOps     ← million ops/sec        (higher is better)
+latency: 141.212 us           ← average latency         (lower is better)
+avg rtt count: 4.50           ← RDMA round-trips/op     (lower is better)
+num shortcuts: 128            ← skip-table entries built
 ```
 
 ---
 
-## Running a Full Policy Experiment Manually
+## 5. Running All Four Policies Manually
 
-### Step 1 — Set policy in compute.cc and rebuild
+Repeat the following for each policy: **STATIC → HOTNESS → CRITICALITY → HYBRID**
 
 ```bash
-# Edit src/main/compute.cc — uncomment the desired policy, comment the rest
-nano src/main/compute.cc   # or vim / any editor
-
+# On 10.30.1.6 — edit policy then rebuild
+nano src/main/compute.cc    # uncomment desired POLICY_* line, comment the rest
 ./build.sh
+
+# Kill leftovers
+killall -9 monitor compute 2>/dev/null || true
+sudo fuser -k 9898/tcp 2>/dev/null || true
 ```
 
-### Step 2 — Kill any leftover processes
-
 ```bash
-killall -9 compute monitor memory 2>/dev/null || true
-```
-
-### Step 3 — Start memory (10.30.1.9)
-
-```bash
+# On 10.30.1.9 — restart memory
+killall -9 memory 2>/dev/null || true
 sudo sysctl -w vm.nr_hugepages=1024
 bin/memory --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1
 ```
 
-### Step 4 — Start monitor (10.30.1.6)
-
 ```bash
+# On 10.30.1.6 — start monitor
 bin/monitor \
   --test_func=0 --memory_num=1 --compute_num=1 \
   --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
@@ -166,141 +217,137 @@ bin/monitor \
   --bucket=256 --run_max_request=100000
 ```
 
-### Step 5 — Start compute (10.30.1.6)
-
 ```bash
+# On 10.30.1.6 — start compute
 bin/compute \
   --monitor_addr=10.30.1.6:9898 --nic_index=0 --ib_port=1 \
   --numa_node_total_num=2 --numa_node_group=0
 ```
 
-Repeat Steps 1–5 for each policy (STATIC → HOTNESS → CRITICALITY → HYBRID).
-
 ---
 
-## Automated Full Experiment Sweep
+## 6. Automated Full Experiment Sweep
 
-Three terminals, start in order:
+Runs all 13 experiments (4 policies + 9 cache pressure) automatically.
+Start in this order, each in its own terminal:
 
-**Terminal 1 — on 10.30.1.9:**
+**Terminal 1 — on 10.30.1.9 (memory node):**
 ```bash
-chmod +x run_memory.sh && ./run_memory.sh
+cd ~/comp-arch/DART
+./run_memory.sh
 ```
 
-**Terminal 2 — on 10.30.1.6:**
+**Terminal 2 — on 10.30.1.6 (compute, start after memory):**
 ```bash
-chmod +x run_compute.sh && ./run_compute.sh
+cd ~/comp-arch/DART
+./run_compute.sh
 ```
 
-**Terminal 3 — on 10.30.1.6 (drives the sweep):**
+**Terminal 3 — on 10.30.1.6 (monitor + orchestrator, start last):**
 ```bash
-chmod +x run_monitor.sh && ./run_monitor.sh
+cd ~/comp-arch/DART
+./run_monitor.sh
 ```
 
-`run_monitor.sh` iterates all 13 experiments, rebuilds the binary for each policy change, and saves results to `results/<timestamp>/summary.txt`.
+Results are saved to `results/<timestamp>/summary.txt`.
 
-Use `--dry-run` to preview the experiment list without running:
+Preview without running:
 ```bash
 ./run_monitor.sh --dry-run
 ```
 
 ---
 
-## Experiment Matrix
+## 7. Experiment Matrix
 
-### Section 1: Policy Comparison (workload f, budget=5000, th_mb=10)
+### Policy Comparison (workload f = 50% read + 50% scan)
 
-| Policy | Workload | Budget | th_mb |
-|--------|----------|--------|-------|
-| POLICY_STATIC | f | 5000 | 10 |
-| POLICY_HOTNESS | f | 5000 | 10 |
-| POLICY_CRITICALITY | f | 5000 | 10 |
-| POLICY_HYBRID | f | 5000 | 10 |
+| Policy | Workload | Budget | th_mb | What it tests |
+|--------|----------|--------|-------|---------------|
+| POLICY_STATIC | f | 5000 | 10 | Baseline — structural skip entries |
+| POLICY_HOTNESS | f | 5000 | 10 | Frequency-based caching |
+| POLICY_CRITICALITY | f | 5000 | 10 | RTT-savings-based caching |
+| POLICY_HYBRID | f | 5000 | 10 | Blend of hotness + criticality |
 
-### Section 2: Cache Pressure Sweep (POLICY_CRITICALITY, workload f)
+### Cache Pressure Sweep (POLICY_CRITICALITY, workload f)
 
-| Budget | th_mb |
-|--------|-------|
-| 500 | 2 |
-| 1000 | 2 |
-| 5000 | 2 |
-| 500 | 10 |
-| 1000 | 10 |
-| 5000 | 10 |
-| 500 | 50 |
-| 1000 | 50 |
-| 5000 | 50 |
-
----
-
-## Workload Generation
-
-Requires YCSB 0.17.0. Workload specs are in `workload_spec/`.
-
-```bash
-# Download YCSB (streaming extract — avoids large disk usage)
-mkdir -p workload/ycsb
-wget -qO- https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz \
-    | tar -xz -C workload/ycsb --strip-components=1
-
-CP=$(find workload/ycsb -name "*.jar" | tr '\n' ':')
-mkdir -p workload/data
-
-# Generate workload f (50% read + 50% scan)
-java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB \
-    -P workload_spec/f -s -load > workload/data/f_load
-java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB \
-    -P workload_spec/f -s -t   > workload/data/f_run
-
-echo "load: $(wc -l < workload/data/f_load) lines"
-echo "run:  $(wc -l < workload/data/f_run) lines"
-```
+| Budget | th_mb | What it tests |
+|--------|-------|---------------|
+| 500 | 2 | Small budget, small cache |
+| 1000 | 2 | Medium budget, small cache |
+| 5000 | 2 | Large budget, small cache |
+| 500 | 10 | Small budget, medium cache |
+| 1000 | 10 | Medium budget, medium cache |
+| 5000 | 10 | Large budget, medium cache |
+| 500 | 50 | Small budget, large cache |
+| 1000 | 50 | Medium budget, large cache |
+| 5000 | 50 | Large budget, large cache |
 
 ---
 
-## Key Parameters
+## 8. Key Parameters Reference
 
-| Parameter | Where | Default | Description |
-|-----------|-------|---------|-------------|
+| Parameter | Location | Default | Description |
+|-----------|----------|---------|-------------|
 | `POLICY_*` | `src/main/compute.cc:51` | CRITICALITY | Active caching policy |
-| `POLICY_MAX_ENTRIES` | `src/main/compute.cc:58` | 5000 | Skip-table budget |
-| `--mem_mb` | monitor flag | 1024 | Remote memory pool (MiB) |
-| `--th_mb` | monitor flag | 10 | Per-thread local cache (MiB) |
+| `POLICY_MAX_ENTRIES` | `src/main/compute.cc:58` | 5000 | Max skip-table entries |
+| `--mem_mb` | monitor flag | 1024 | Remote memory pool in MiB |
+| `--th_mb` | monitor flag | 10 | Per-thread local RDMA cache in MiB |
 | `--run_max_request` | monitor flag | 100000 | Operations in run phase |
-| `--load_thread_num` | monitor flag | 56 | Threads for load phase |
-| `--run_thread_num` | monitor flag | 56 | Threads for benchmark |
+| `--load_thread_num` | monitor flag | 56 | Threads for loading data |
+| `--run_thread_num` | monitor flag | 56 | Threads for benchmark run |
+| `--bucket` | monitor flag | 256 | RACE hash table bucket size |
+| `--nic_index` | memory/compute flag | 0 | InfiniBand NIC index (`ibp59s0`) |
+| `--ib_port` | memory/compute flag | 1 | InfiniBand port number |
 
 ---
 
-## Output Metrics
+## 9. Workload Reference
 
-```
-throughput: X.XX MOps      ← million ops/sec          (higher is better)
-latency: XX.X us           ← average latency           (lower is better)
-avg rtt count: X.XX        ← RDMA round-trips per op   (lower is better)
-num shortcuts: XXXX        ← skip-table entries built
-```
+| Letter | Read% | Scan% | Distribution | Notes |
+|--------|-------|-------|--------------|-------|
+| `f` | 50 | 50 | zipfian | mixed read+scan — **used for all experiments** |
+| `c` | 100 | 0 | zipfian | read-heavy, skewed |
+| `g` | 100 | 0 | uniform | read-heavy, uniform |
+| `d` | 100 | 0 | latest | read recent keys |
+| `e` | 0 | 100 | zipfian | scan-only |
+| `a` | 100 | 0 | zipfian | same as c |
+| `b` | 100 | 0 | zipfian | same as c |
 
 ---
 
-## Troubleshooting
+## 10. Troubleshooting
 
-**`connect to monitor error`** — Monitor is not running yet. Start monitor before compute.
+**`connect to monitor error`**
+Monitor is not running yet. Always start monitor before compute.
 
-**`ib device wasn't found`** — Wrong NIC index. Use `--nic_index=0`.
+**`ib device wasn't found`**
+Wrong NIC index. Always use `--nic_index=0`.
 
-**`Address already in use` on port 9898** — Kill leftover monitor:
+**`Address already in use` on port 9898**
 ```bash
 killall -9 monitor compute memory 2>/dev/null || true
 sudo fuser -k 9898/tcp 2>/dev/null || true
+sleep 2
 ```
 
-**Workload 0 records** — Stale binary cache. Delete and regenerate:
+**Workload shows 0 records**
+Stale binary cache files. Delete them:
 ```bash
 rm -f workload/data/*__bin_*
 ```
 
-**Disk full** — Remove build intermediates:
+**Disk full on 10.30.1.6**
+Free space by removing build intermediates:
 ```bash
 rm -rf build/CMakeFiles build/src
+rm -f workload/data/*  # remove old workload files before regenerating
 ```
+
+**`git pull` blocked by local changes**
+```bash
+git stash && git pull && git stash drop
+```
+
+**Compute keeps failing to connect after an experiment**
+`run_compute.sh` retries every 15s while monitor is rebuilding. This is normal — wait for `run_monitor.sh` to finish the build and start the next monitor.
