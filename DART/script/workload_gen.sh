@@ -26,6 +26,6 @@ echo -e "${Blue}${Bold}YCSB RUN${Reset}"
 for x in {a..g}
 do
     echo -e "${Cyan}gen ${x}${Reset}"
-    python2 ./ycsb load basic -P ../../../workload_spec/${x} -s > ../../../workload/data/${x}_load
-    python2 ./ycsb run basic -P ../../../workload_spec/${x} -s > ../../../workload/data/${x}_run
+    python3 ./ycsb load basic -P ../../../workload_spec/${x} -s > ../../../workload/data/${x}_load
+    python3 ./ycsb run basic -P ../../../workload_spec/${x} -s > ../../../workload/data/${x}_run
 done
