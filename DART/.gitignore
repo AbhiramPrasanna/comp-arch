@@ -22,3 +22,6 @@ emails.txt
 *.log
 
 email_filtered.txt
+gflags/
+magic_enum/
+pylib/argimpl/

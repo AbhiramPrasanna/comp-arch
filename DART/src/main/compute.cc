@@ -62,7 +62,7 @@
 
 // Maximum skip-table entries for policy-based construction.
 // Tuning this controls cache pressure experiments.
-static constexpr uint64_t POLICY_MAX_ENTRIES = 5000;
+static constexpr uint64_t POLICY_MAX_ENTRIES = 1000;
 // -------------------------------------------------------------------------
 
 const char* ips[] = {"10.30.1.6"};  // memory node IP

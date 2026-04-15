@@ -1,0 +1,103 @@
+[94m[backtrace.hpp:58] (InstallSignalHandlers) [1mInstall signal handlers[0m
+[90m[compute.cc:486] (main) [1mgflag: tab_completion_columns = 80[0m
+[90m[compute.cc:486] (main) [1mgflag: help = false[0m
+[90m[compute.cc:486] (main) [1mgflag: helpfull = false[0m
+[90m[compute.cc:486] (main) [1mgflag: helppackage = false[0m
+[90m[compute.cc:486] (main) [1mgflag: helpshort = false[0m
+[90m[compute.cc:486] (main) [1mgflag: helpxml = false[0m
+[90m[compute.cc:486] (main) [1mgflag: version = false[0m
+[90m[compute.cc:486] (main) [1mgflag: ib_port = 1[0m
+[90m[compute.cc:486] (main) [1mgflag: monitor_addr = 10.30.1.6:9898[0m
+[90m[compute.cc:486] (main) [1mgflag: nic_index = 0[0m
+[90m[compute.cc:486] (main) [1mgflag: numa_node_group = 0[0m
+[90m[compute.cc:486] (main) [1mgflag: numa_node_total_num = 2[0m
+[90m[socket-connection.cc:22] (client_connect) [1mconnect to 10.30.1.6:9898[0m
+[90m[socket-connection.cc:28] (client_connect) [1minit (connect) 3[0m
+workload_load_string: ./workload/data/c_load
+workload_run_string: ./workload/data/c_run
+[94m[compute.cc:539] (main) [1mthis compute node is No.1[0m
+[94m[compute.cc:544] (main) [1mis_email = 0[0m
+[94m[compute.cc:587] (main) [1mEstablish the connection of skip table.[0m
+[94m[ycsb-fileloader.cc:33] (load_from_file) [1muse int64 key[0m
+[91m[ycsb-fileloader.cc:66] (load_from_file) [1;4mcannot open file ./workload/data/c_load[0m
+[94m[ycsb-fileloader.cc:33] (load_from_file) [1muse int64 key[0m
+[91m[ycsb-fileloader.cc:66] (load_from_file) [1;4mcannot open file ./workload/data/c_run[0m
+[94m[compute.cc:603] (main) [1mworkload_load_string: ./workload/data/c_load, record_len = 0[0m
+[94m[compute.cc:604] (main) [1mworkload_run_string: ./workload/data/c_run, record_len = 0[0m
+[94m[compute.cc:691] (main) [1mthread 1 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 2 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 3 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 4 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 5 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 6 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 7 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 8 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 9 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 10 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 11 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 12 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 13 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 14 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 15 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 16 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 17 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 18 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 19 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 20 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 21 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 22 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 23 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 24 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 25 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 26 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 27 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 28 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 29 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 30 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 31 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 32 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 33 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 34 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 35 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 36 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 37 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 38 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 39 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 40 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 41 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 42 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 43 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 44 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 45 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 46 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 47 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 48 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 49 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 50 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 51 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 52 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 53 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 54 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 55 to memory 1 connected[0m
+[94m[compute.cc:691] (main) [1mthread 56 to memory 1 connected[0m
+[95m[compute.cc:705] (main) [1mCompute node No.1 ready.[0m
+[94m[compute.cc:715] (main) [1mWaiting for other compute nodes...[0m
+[95m[compute.cc:726] (main) [1mCompute node No.1 start.[0m
+[93m[compute.cc:731] (main) [1;4mload start[0m
+[95m[rdma-connection.hpp:29] (print) [1mread_size_times[0m
+[95m[rdma-connection.hpp:31] (print) [1mread_fail_size_times[0m
+[95m[rdma-connection.hpp:33] (print) [1mwrite_size_times[0m
+[95m[rdma-connection.hpp:35] (print) [1mwrite_fail_size_times[0m
+[95m[rdma-connection.hpp:37] (print) [1mcas_size_times[0m
+[95m[rdma-connection.hpp:39] (print) [1mcas_fail_size_times[0m
+[93m[compute.cc:776] (main) [1;4mload done, start to prepare[0m
+[94m[compute.cc:417] (create_skip_table) [1mnum shortcuts:0[0m
+[94m[compute.cc:809] (main) [1mskip list: load done![0m
+[93m[compute.cc:840] (main) [1;4mprepare done, start to run[0m
+[94m[backtrace.hpp:52] (SigINTHandler) [1mSIGINT received[0m
+/usr/lib/libc.so.6(+0x94bf3) [0x7faf0bca8bf3]
+/usr/lib/libstdc++.so.6(_ZNSt6thread4joinEv+0x18) [0x7faf0bee19b8]
+bin/compute(main+0x4a5e) [0x559593ee35cc]
+/usr/lib/libc.so.6(+0x25c88) [0x7faf0bc39c88]
+/usr/lib/libc.so.6(__libc_start_main+0x8c) [0x7faf0bc39d4c]
+bin/compute(_start+0x25) [0x559593edcb85]
