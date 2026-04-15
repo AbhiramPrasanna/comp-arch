@@ -10,6 +10,7 @@
 
 #include "prheart/art-head.hpp"
 #include "prheart/art-data.hpp"
+#include "prheart/access-tracker.hpp"
 #include "race/race.h"
 
 
