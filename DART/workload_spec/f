@@ -7,8 +7,11 @@ fieldlength=100
 
 readproportion=0.5
 updateproportion=0
-scanproportion=0
+scanproportion=0.5
 insertproportion=0
-readmodifywriteproportion=0.5
+readmodifywriteproportion=0
+
+maxscanlength=100
+scanlengthdistribution=uniform
 
 requestdistribution=zipfian
