@@ -30,10 +30,10 @@ MEMORY_IPS=("10.30.1.6")
 # Compute nodes: space-separated IPs  (can include MONITOR_IP for co-located)
 COMPUTE_IPS=("10.30.1.9")
 
-SSH_USER="shiroko"                   # SSH user on all remote nodes
-DART_REMOTE_DIR="~/DART"            # DART root on every remote node
+SSH_USER="apa222"                    # SSH user on all remote nodes
+DART_REMOTE_DIR="~/comp-arch/DART"  # DART root on every remote node
 
-MEMORY_NIC=1                         # NIC index on memory nodes
+MEMORY_NIC=0                         # NIC index on memory nodes
 COMPUTE_NIC=0                        # NIC index on compute nodes
 IB_PORT=1
 NUMA_TOTAL=2                         # --numa_node_total_num
