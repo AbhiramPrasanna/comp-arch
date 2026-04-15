@@ -775,6 +775,11 @@ int main(int argc, char** argv) {
         }
         log_warn << "load done, start to prepare" << std::endl;
 
+#ifdef ENABLE_ACCESS_TRACKING
+        // Print ART tree height and per-level node distribution.
+        prheart::AccessTracker::instance().print_tree_stats();
+#endif
+
         #ifdef DYNAMIC
         dfs(
             memory_machine_num,

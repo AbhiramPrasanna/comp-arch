@@ -26,6 +26,14 @@ namespace prheart {
 void AccessTracker::record_read(
     uintptr_t fptr, uint32_t traversal_depth, uint8_t node_type
 ) {
+    // Track maximum depth seen (lock-free CAS loop).
+    uint32_t cur = max_depth_seen_.load(std::memory_order_relaxed);
+    while (traversal_depth > cur &&
+           !max_depth_seen_.compare_exchange_weak(
+               cur, traversal_depth,
+               std::memory_order_relaxed, std::memory_order_relaxed))
+    {}
+
     auto& sh = shard_of(fptr);
     std::lock_guard<std::mutex> lk(sh.mtx);
     // emplace is a no-op if the key already exists; it returns an iterator
@@ -101,6 +109,57 @@ std::unordered_set<uintptr_t> AccessTracker::get_top_k_set(
     for (auto& [fptr, _] : ranked)
         result.insert(fptr);
     return result;
+}
+
+// -----------------------------------------------------------------------
+// nodes_per_depth_histogram
+//
+// For each distinct tracked node, compute its characteristic depth as
+//   char_depth = depth_sum / read_count  (rounded to nearest integer)
+// which is the average now_pos at which the node was accessed — stable
+// because a node's position in the tree does not change.
+// Returns a vector indexed by depth level with the count of nodes there.
+// -----------------------------------------------------------------------
+std::vector<uint64_t> AccessTracker::nodes_per_depth_histogram() const {
+    uint32_t max_d = max_depth_seen_.load(std::memory_order_relaxed);
+    std::vector<uint64_t> hist(max_d + 1, 0);
+
+    for (uint32_t s = 0; s < NUM_SHARDS; ++s) {
+        std::lock_guard<std::mutex> lk(shards_[s].mtx);
+        for (const auto& [fptr, rec] : shards_[s].records) {
+            uint64_t reads = rec.read_count.load(std::memory_order_relaxed);
+            if (reads == 0) continue;
+            uint64_t dsum  = rec.depth_sum.load(std::memory_order_relaxed);
+            uint32_t depth = static_cast<uint32_t>((dsum + reads / 2) / reads); // round
+            if (depth < hist.size())
+                hist[depth]++;
+        }
+    }
+    return hist;
+}
+
+// -----------------------------------------------------------------------
+// print_tree_stats
+//
+// Prints:
+//   - Tree height (max now_pos seen = worst-case RTTs before shortcuts)
+//   - Total distinct inner nodes tracked
+//   - Per-level node count histogram
+// -----------------------------------------------------------------------
+void AccessTracker::print_tree_stats() const {
+    uint32_t height = max_depth_seen_.load(std::memory_order_relaxed);
+    uint64_t total  = total_nodes_tracked();
+    auto hist       = nodes_per_depth_histogram();
+
+    log_purple << "=== ART Tree Stats ===" << std::endl;
+    log_info   << "  Tree height (max now_pos / RTT depth) : " << height << std::endl;
+    log_info   << "  Total distinct inner nodes tracked    : " << total  << std::endl;
+    log_info   << "  Nodes per depth level:" << std::endl;
+    for (uint32_t d = 0; d < hist.size(); ++d) {
+        if (hist[d] > 0)
+            log_info << "    depth " << std::setw(2) << d
+                     << " : " << hist[d] << " nodes" << std::endl;
+    }
 }
 
 // -----------------------------------------------------------------------

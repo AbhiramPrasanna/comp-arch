@@ -151,6 +151,22 @@ public:
     // the project.
     void print_policy_comparison(uint64_t k = 100) const;
 
+    // Tree height = maximum now_pos seen across all tracked nodes.
+    // Equals the deepest level in the ART, i.e. the worst-case RTT count
+    // before any skip-table shortcuts are applied.
+    uint32_t max_depth() const noexcept {
+        return max_depth_seen_.load(std::memory_order_relaxed);
+    }
+
+    // Per-depth-level node count.
+    // nodes_at_depth[d] = number of distinct inner nodes whose characteristic
+    // depth (depth_sum / read_count, rounded) equals d.
+    // Gives a histogram of how many ART nodes live at each RTT level.
+    std::vector<uint64_t> nodes_per_depth_histogram() const;
+
+    // Print tree height + per-level node distribution.
+    void print_tree_stats() const;
+
     // Clear all records.  Call between the load and run phases so that
     // run-phase tracking starts from a clean state.
     void reset();
@@ -160,6 +176,9 @@ public:
 
 private:
     AccessTracker() = default;
+
+    // Maximum traversal_depth (now_pos) seen across all record_read() calls.
+    std::atomic<uint32_t> max_depth_seen_{0};
 
     struct Shard {
         mutable std::mutex mtx;
