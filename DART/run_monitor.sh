@@ -41,8 +41,10 @@ RUN_MAX_REQUEST=100000
 
 WORKLOAD_PREFIX="./workload/data/"
 
-# Wait for compute+memory to restart between experiments
-SLEEP_BETWEEN_EXPERIMENTS=8
+# Wait after each experiment for compute+memory to exit and restart
+SLEEP_AFTER_EXPERIMENT=5
+# Wait after a build so run_compute.sh picks up the new binary
+SLEEP_AFTER_BUILD=20
 
 # -----------------------------------------------------------------------------
 # LOCAL PATHS
@@ -172,8 +174,8 @@ for exp in "${ALL_EXPERIMENTS[@]}"; do
         build_binary
         LAST_POLICY="$policy"
         LAST_ENTRIES="$max_entries"
-        log "Waiting ${SLEEP_BETWEEN_EXPERIMENTS}s for compute to restart with new binary..."
-        sleep "$SLEEP_BETWEEN_EXPERIMENTS"
+        log "Waiting ${SLEEP_AFTER_BUILD}s for run_compute.sh to pick up new binary..."
+        sleep "$SLEEP_AFTER_BUILD"
     fi
 
     {
@@ -218,8 +220,8 @@ for exp in "${ALL_EXPERIMENTS[@]}"; do
         | tee -a "$SUMMARY_FILE"
 
     log "Log: ${exp_log}"
-    log "Waiting ${SLEEP_BETWEEN_EXPERIMENTS}s for compute+memory to restart..."
-    sleep "$SLEEP_BETWEEN_EXPERIMENTS"
+    log "Waiting ${SLEEP_AFTER_EXPERIMENT}s for compute+memory to restart..."
+    sleep "$SLEEP_AFTER_EXPERIMENT"
 
 done
 

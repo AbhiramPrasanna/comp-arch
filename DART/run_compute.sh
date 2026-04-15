@@ -24,12 +24,22 @@ echo ""
 
 while true; do
     echo "[$(date '+%H:%M:%S')] Starting bin/compute..."
+    START=$SECONDS
     bin/compute \
         --monitor_addr="${MONITOR_IP}:9898" \
         --nic_index="${NIC_INDEX}" \
         --ib_port="${IB_PORT}" \
         --numa_node_total_num="${NUMA_TOTAL}" \
         --numa_node_group="${NUMA_GROUP}"
-    echo "[$(date '+%H:%M:%S')] Compute exited. Restarting in 3s..."
-    sleep 3
+    ELAPSED=$(( SECONDS - START ))
+
+    if [[ $ELAPSED -lt 10 ]]; then
+        # Fast exit = monitor not up yet (connection refused or build in progress)
+        echo "[$(date '+%H:%M:%S')] Monitor not ready, retrying in 15s..."
+        sleep 15
+    else
+        # Slow exit = experiment finished normally
+        echo "[$(date '+%H:%M:%S')] Experiment done. Restarting in 3s..."
+        sleep 3
+    fi
 done
