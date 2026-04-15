@@ -146,6 +146,7 @@ run_remote_bg() {
     local logfile="$2"
     shift 2
     if is_local "$ip"; then
+        mkdir -p "$(dirname "$logfile")"
         bash -c "$*" >> "$logfile" 2>&1 &
     else
         # Run in background on remote, redirect to remote log; fetch log later
@@ -156,11 +157,8 @@ run_remote_bg() {
 
 kill_all_dart() {
     [[ $DRY_RUN -eq 1 ]] && return
-    log "Killing any leftover DART processes on all nodes..."
-    for ip in "${MEMORY_IPS[@]}" "${COMPUTE_IPS[@]}"; do
-        run_remote "$ip" "killall -9 compute memory monitor 2>/dev/null; true" 2>/dev/null || true
-    done
-    killall -9 monitor compute memory 2>/dev/null || true
+    log "Killing local compute/monitor processes..."
+    killall -9 monitor compute 2>/dev/null || true
     sleep 2
 }
 
