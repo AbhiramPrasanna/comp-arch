@@ -58,7 +58,7 @@
 static constexpr uint64_t POLICY_MAX_ENTRIES = 5000;
 // -------------------------------------------------------------------------
 
-const char* ips[] = {"10.30.1.6"};
+const char* ips[] = {"10.30.1.9"};  // memory node IP
 
 template<typename T>
 using coro = boost::coroutines2::coroutine<T>;
