@@ -48,9 +48,9 @@
 //
 // To run a Phase 3 experiment: comment out POLICY_STATIC and uncomment one
 // of the other three, recompile, and compare throughput / latency.
-#define POLICY_STATIC
+// #define POLICY_STATIC
 // #define POLICY_HOTNESS
-// #define POLICY_CRITICALITY
+#define POLICY_CRITICALITY
 // #define POLICY_HYBRID
 
 // Maximum skip-table entries for policy-based construction.
