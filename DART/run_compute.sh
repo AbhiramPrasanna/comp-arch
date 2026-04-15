@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# run_compute.sh  —  Run on COMPUTE node (10.30.1.6)
+# run_compute.sh  —  Run on COMPUTE node (10.30.1.9)
 #
 # USAGE:
 #   ./run_compute.sh
@@ -11,7 +11,7 @@
 # script always picks up the latest bin/compute on each restart.
 # =============================================================================
 
-MONITOR_IP="10.30.1.6"
+MONITOR_IP="10.30.1.9"
 NIC_INDEX=0
 IB_PORT=1
 NUMA_TOTAL=2
@@ -19,7 +19,7 @@ NUMA_GROUP=0
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-echo "[$(date '+%H:%M:%S')] Compute ready. Will connect to monitor at ${MONITOR_IP}:9898"
+echo "[$(date '+%H:%M:%S')] Compute ready. Will connect to monitor at ${MONITOR_IP}:9898 (this node)"
 echo ""
 
 while true; do

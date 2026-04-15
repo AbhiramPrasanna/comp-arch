@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# run_monitor.sh  —  Run on MONITOR/COMPUTE node (10.30.1.6)
+# run_monitor.sh  —  Run on MONITOR/COMPUTE node (10.30.1.9)
 #
 # USAGE:
 #   ./run_monitor.sh [--dry-run]
@@ -12,8 +12,8 @@
 #   4. Saves results to results/<timestamp>/
 #
 # BEFORE running this:
-#   - Start run_memory.sh on 10.30.1.9
-#   - Start run_compute.sh in another terminal on this machine
+#   - Start run_memory.sh on 10.30.1.6
+#   - Start run_compute.sh in another terminal on this machine (10.30.1.9)
 #
 # When monitor finishes each experiment, compute and memory exit automatically
 # and their loop scripts restart them for the next experiment.
@@ -23,7 +23,7 @@ set -uo pipefail
 # -----------------------------------------------------------------------------
 # CONFIGURATION
 # -----------------------------------------------------------------------------
-MONITOR_IP="10.30.1.6"
+MONITOR_IP="10.30.1.9"
 MEMORY_NUM=1
 COMPUTE_NUM=1
 
@@ -37,7 +37,7 @@ LOAD_THREADS=56
 RUN_THREADS=56
 CORO_NUM=1
 BUCKET=256
-RUN_MAX_REQUEST=100000
+RUN_MAX_REQUEST=1000000
 
 WORKLOAD_PREFIX="./workload/data/"
 
@@ -139,7 +139,7 @@ mkdir -p "$RESULTS_DIR"
     echo "DART Phase 3 — Experiment Results"
     echo "Date            : $(date)"
     echo "Monitor/Compute : ${MONITOR_IP}"
-    echo "Memory node     : 10.30.1.9  (run_memory.sh)"
+    echo "Memory node     : 10.30.1.6  (run_memory.sh)"
     echo "Threads         : load=${LOAD_THREADS}  run=${RUN_THREADS}"
     echo "Mem pool        : ${MEM_MB} MiB"
     echo "Max requests    : ${RUN_MAX_REQUEST}"
