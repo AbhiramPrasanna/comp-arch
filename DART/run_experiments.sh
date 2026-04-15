@@ -39,12 +39,12 @@ IB_PORT=1
 NUMA_TOTAL=2                         # --numa_node_total_num
 NUMA_GROUP=0                         # --numa_node_group
 
-MEM_MB=8192                          # Remote memory pool (MiB) on memory node
+MEM_MB=1024                          # Remote memory pool (MiB) on memory node
 LOAD_THREADS=56                      # Threads used during load phase
 RUN_THREADS=56                       # Threads used during run phase
 CORO_NUM=1
 BUCKET=256
-RUN_MAX_REQUEST=1000000
+RUN_MAX_REQUEST=100000
 
 # Path to workload files on the compute node.
 # If monitor and compute are the same machine: use ./workload/data/
