@@ -1,0 +1,155 @@
+cd ~/comp-arch/DART && sudo sysctl -w vm.nr_hugepages=1500
+
+CP=$(find workload/ycsb -name "*.jar" 2>/dev/null | tr '\n' ':')
+if [ -n "$CP" ]; then
+  mkdir -p workload_spec workload/data
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.3\n' > workload_spec/skew03
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.5\n' > workload_spec/skew05
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.8\n' > workload_spec/skew08
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.99\n' > workload_spec/skew99
+  for TAG in 03 05 08 99; do
+    [ ! -f workload/data/skew${TAG}_load ] && echo "Generating skew${TAG} load..." && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/skew${TAG} -s -load > workload/data/skew${TAG}_load
+    [ ! -f workload/data/skew${TAG}_run  ] && echo "Generating skew${TAG} run..."  && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/skew${TAG} -s -t   > workload/data/skew${TAG}_run
+  done
+  [ ! -f workload/data/g_load ] && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/g -s -load > workload/data/g_load
+  [ ! -f workload/data/g_run  ] && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/g -s -t   > workload/data/g_run
+fi
+
+run_mon() {
+  bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+    --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+    --mem_mb=2048 --bucket=256 --run_max_request=1000000 \
+    --workload_prefix=./workload/data/ "$@"
+}
+
+echo "=== MON  1/23  STATIC      f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  2/23  STATIC      skew03 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew03_load --workload_run=skew03_run
+echo "=== MON  3/23  STATIC      skew05 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew05_load --workload_run=skew05_run
+echo "=== MON  4/23  STATIC      skew08 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew08_load --workload_run=skew08_run
+echo "=== MON  5/23  STATIC      skew99 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew99_load --workload_run=skew99_run
+echo "=== MON  6/23  STATIC      g      th=10 ===" ; run_mon --th_mb=10 --workload_load=g_load      --workload_run=g_run
+echo "=== MON  7/23  HOTNESS     f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  8/23  HYBRID      f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  9/23  CRIT-5000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 10/23  CRIT-5000   f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 11/23  CRIT-5000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 12/23  CRIT-5000   f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 13/23  CRIT-5000   skew03 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew03_load --workload_run=skew03_run
+echo "=== MON 14/23  CRIT-5000   skew05 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew05_load --workload_run=skew05_run
+echo "=== MON 15/23  CRIT-5000   skew08 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew08_load --workload_run=skew08_run
+echo "=== MON 16/23  CRIT-5000   skew99 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew99_load --workload_run=skew99_run
+echo "=== MON 17/23  CRIT-5000   g      th=10 ===" ; run_mon --th_mb=10 --workload_load=g_load      --workload_run=g_run
+echo "=== MON 18/23  CRIT-500    f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 19/23  CRIT-500    f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 20/23  CRIT-500    f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 21/23  CRIT-1000   f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 22/23  CRIT-1000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 23/23  CRIT-1000   f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+
+echo "=== ALL 23 MONITOR RUNS COMPLETE ==="
+cd ~/comp-arch/DART && sudo sysctl -w vm.nr_hugepages=1500
+
+CP=$(find workload/ycsb -name "*.jar" 2>/dev/null | tr '\n' ':')
+if [ -n "$CP" ]; then
+  mkdir -p workload_spec workload/data
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.3\n' > workload_spec/skew03
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.5\n' > workload_spec/skew05
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.8\n' > workload_spec/skew08
+  printf 'recordcount=1000000\noperationcount=1000000\nworkload=site.ycsb.workloads.CoreWorkload\nreadallfields=true\nreadproportion=1\nupdateproportion=0\nscanproportion=0\ninsertproportion=0\nrequestdistribution=zipfian\nzipfian_const=0.99\n' > workload_spec/skew99
+  for TAG in 03 05 08 99; do
+    [ ! -f workload/data/skew${TAG}_load ] && echo "Generating skew${TAG} load..." && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/skew${TAG} -s -load > workload/data/skew${TAG}_load
+    [ ! -f workload/data/skew${TAG}_run  ] && echo "Generating skew${TAG} run..."  && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/skew${TAG} -s -t   > workload/data/skew${TAG}_run
+  done
+  [ ! -f workload/data/g_load ] && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/g -s -load > workload/data/g_load
+  [ ! -f workload/data/g_run  ] && java -cp "$CP" site.ycsb.Client -db site.ycsb.BasicDB -P workload_spec/g -s -t   > workload/data/g_run
+fi
+
+run_mon() {
+  bin/monitor --test_func=0 --memory_num=1 --compute_num=1 \
+    --load_thread_num=56 --run_thread_num=56 --coro_num=1 \
+    --mem_mb=2048 --bucket=256 --run_max_request=1000000 \
+    --workload_prefix=./workload/data/ "$@"
+}
+
+echo "=== MON  1/23  STATIC      f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  2/23  STATIC      skew03 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew03_load --workload_run=skew03_run
+echo "=== MON  3/23  STATIC      skew05 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew05_load --workload_run=skew05_run
+echo "=== MON  4/23  STATIC      skew08 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew08_load --workload_run=skew08_run
+echo "=== MON  5/23  STATIC      skew99 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew99_load --workload_run=skew99_run
+echo "=== MON  6/23  STATIC      g      th=10 ===" ; run_mon --th_mb=10 --workload_load=g_load      --workload_run=g_run
+echo "=== MON  7/23  HOTNESS     f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  8/23  HYBRID      f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON  9/23  CRIT-5000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 10/23  CRIT-5000   f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 11/23  CRIT-5000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 12/23  CRIT-5000   f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 13/23  CRIT-5000   skew03 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew03_load --workload_run=skew03_run
+echo "=== MON 14/23  CRIT-5000   skew05 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew05_load --workload_run=skew05_run
+echo "=== MON 15/23  CRIT-5000   skew08 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew08_load --workload_run=skew08_run
+echo "=== MON 16/23  CRIT-5000   skew99 th=10 ===" ; run_mon --th_mb=10 --workload_load=skew99_load --workload_run=skew99_run
+echo "=== MON 17/23  CRIT-5000   g      th=10 ===" ; run_mon --th_mb=10 --workload_load=g_load      --workload_run=g_run
+echo "=== MON 18/23  CRIT-500    f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 19/23  CRIT-500    f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 20/23  CRIT-500    f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 21/23  CRIT-1000   f      th=2  ===" ; run_mon --th_mb=2  --workload_load=f_load      --workload_run=f_run
+echo "=== MON 22/23  CRIT-1000   f      th=10 ===" ; run_mon --th_mb=10 --workload_load=f_load      --workload_run=f_run
+echo "=== MON 23/23  CRIT-1000   f      th=50 ===" ; run_mon --th_mb=50 --workload_load=f_load      --workload_run=f_run
+
+echo "=== ALL 23 MONITOR RUNS COMPLETE ==="
+
+
+
+
+cd ~/comp-arch/DART && sudo sysctl -w vm.nr_hugepages=1100 && for i in $(seq 1 23); do killall -9 memory 2>/dev/null; true; sleep 5; echo "=== MEMORY restart $i/23 ==="; bin/memory --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1; done && echo "=== ALL MEMORY RESTARTS DONE ==="
+
+
+cd ~/comp-arch/DART && sudo sysctl -w vm.nr_hugepages=1500
+
+set_policy() {
+  sed -i 's|^#define POLICY_STATIC$|// #define POLICY_STATIC|;s|^#define POLICY_HOTNESS$|// #define POLICY_HOTNESS|;s|^#define POLICY_CRITICALITY$|// #define POLICY_CRITICALITY|;s|^#define POLICY_HYBRID$|// #define POLICY_HYBRID|' src/main/compute.cc
+  sed -i "s|^// #define $1\$|#define $1|" src/main/compute.cc
+  sed -i "s|POLICY_MAX_ENTRIES = [0-9]*|POLICY_MAX_ENTRIES = $2|" src/main/compute.cc
+}
+
+run_compute() {
+  sleep 35
+  bin/compute --monitor_addr=10.30.1.9:9898 --nic_index=0 --ib_port=1 \
+    --numa_node_total_num=2 --numa_node_group=0
+}
+
+echo "=== BUILD STATIC 5000 ===" && set_policy POLICY_STATIC 5000 && ./build.sh
+echo "=== COMPUTE  1/23  STATIC      f      ===" ; run_compute
+echo "=== COMPUTE  2/23  STATIC      skew03 ===" ; run_compute
+echo "=== COMPUTE  3/23  STATIC      skew05 ===" ; run_compute
+echo "=== COMPUTE  4/23  STATIC      skew08 ===" ; run_compute
+echo "=== COMPUTE  5/23  STATIC      skew99 ===" ; run_compute
+echo "=== COMPUTE  6/23  STATIC      g      ===" ; run_compute
+
+echo "=== BUILD HOTNESS 5000 ===" && set_policy POLICY_HOTNESS 5000 && ./build.sh
+echo "=== COMPUTE  7/23  HOTNESS     f      ===" ; run_compute
+
+echo "=== BUILD HYBRID 5000 ===" && set_policy POLICY_HYBRID 5000 && ./build.sh
+echo "=== COMPUTE  8/23  HYBRID      f      ===" ; run_compute
+
+echo "=== BUILD CRITICALITY 5000 ===" && set_policy POLICY_CRITICALITY 5000 && ./build.sh
+echo "=== COMPUTE  9/23  CRIT-5000   f      ===" ; run_compute
+echo "=== COMPUTE 10/23  CRIT-5000   f      ===" ; run_compute
+echo "=== COMPUTE 11/23  CRIT-5000   f      ===" ; run_compute
+echo "=== COMPUTE 12/23  CRIT-5000   f      ===" ; run_compute
+echo "=== COMPUTE 13/23  CRIT-5000   skew03 ===" ; run_compute
+echo "=== COMPUTE 14/23  CRIT-5000   skew05 ===" ; run_compute
+echo "=== COMPUTE 15/23  CRIT-5000   skew08 ===" ; run_compute
+echo "=== COMPUTE 16/23  CRIT-5000   skew99 ===" ; run_compute
+echo "=== COMPUTE 17/23  CRIT-5000   g      ===" ; run_compute
+
+echo "=== BUILD CRITICALITY 500 ===" && set_policy POLICY_CRITICALITY 500 && ./build.sh
+echo "=== COMPUTE 18/23  CRIT-500    f      ===" ; run_compute
+echo "=== COMPUTE 19/23  CRIT-500    f      ===" ; run_compute
+echo "=== COMPUTE 20/23  CRIT-500    f      ===" ; run_compute
+
+echo "=== BUILD CRITICALITY 1000 ===" && set_policy POLICY_CRITICALITY 1000 && ./build.sh
+echo "=== COMPUTE 21/23  CRIT-1000   f      ===" ; run_compute
+echo "=== COMPUTE 22/23  CRIT-1000   f      ===" ; run_compute
+echo "=== COMPUTE 23/23  CRIT-1000   f      ===" ; run_compute
+
+echo "=== ALL 23 COMPUTE RUNS COMPLETE ==="
